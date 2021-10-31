@@ -1,5 +1,8 @@
-StarkWare Elliptic Curve Signature with the dYdX REST API
+# StarkWare Elliptic Curve Signature 
 
+For usage with the [dYdX REST API](https://docs.dydx.exchange/)
+
+## Intro
 Within the dYdX L2 system, authentication is handled by a separate key pair, known as the account's STARK key pair.
 
 STARK key authentication is required for the following operations:
@@ -10,7 +13,13 @@ STARK key authentication is required for the following operations:
 For futher details see:
 https://docs.dydx.exchange/#authentication
 
-Usage:
+## Installation
+
+```
+mvn install
+```
+
+## Usage:
 
 ```
 OrderWithClientIdAndQuoteAmount order = new OrderWithClientIdAndQuoteAmount(
