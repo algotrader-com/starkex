@@ -129,9 +129,9 @@ public class StarkwareOrderConverter {
     private BigInteger getStarkwareLimitFeeAmount(String limitFee, BigInteger quantumsAmountCollateral) {
         // Constrain the limit fee to six decimals of precision. The final fee amount must be rounded up.
         return new BigDecimal(limitFee)
-                .round(new MathContext(6, RoundingMode.DOWN))
+                .setScale(6, RoundingMode.DOWN)
                 .multiply(new BigDecimal(quantumsAmountCollateral))
-                .round(new MathContext(0, RoundingMode.UP))
+                .setScale(0, RoundingMode.UP)
                 .toBigInteger();
     }
 
