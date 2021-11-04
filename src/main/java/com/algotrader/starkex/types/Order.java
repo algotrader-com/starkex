@@ -17,27 +17,27 @@ public class Order {
         this.expirationIsoTimestamp = expirationIsoTimestamp;
     }
 
-    public String getPositionId() {
+    public String positionId() {
         return positionId;
     }
 
-    public String getHumanSize() {
+    public String humanSize() {
         return humanSize;
     }
 
-    public String getLimitFee() {
+    public String limitFee() {
         return limitFee;
     }
 
-    public DydxMarket getMarket() {
+    public DydxMarket market() {
         return market;
     }
 
-    public StarkwareOrderSide getSide() {
+    public StarkwareOrderSide side() {
         return side;
     }
 
-    public String getExpirationIsoTimestamp() {
+    public String expirationIsoTimestamp() {
         return expirationIsoTimestamp;
     }
 }

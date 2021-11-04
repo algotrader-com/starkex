@@ -3,11 +3,13 @@ package com.algotrader.starkex.signature;
 import com.algotrader.starkex.exception.SignException;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 /**
  * Stark curve signer class
@@ -22,6 +24,14 @@ public class EcSigner {
         this.curve = curve;
     }
 
+    private byte[] toByteArray(BigInteger value) {
+        byte[] signedValue = value.toByteArray();
+        if (signedValue[0] != 0x00) {
+            return signedValue;
+        }
+        return Arrays.copyOfRange(signedValue, 1, signedValue.length);
+    }
+
     /**
      * @param privateKey private key
      * @param message    message to be signed
@@ -31,7 +41,7 @@ public class EcSigner {
         HMacDSAKCalculator hMacDSAKCalculator = new HMacDSAKCalculator(new SHA256Digest());
         ECDSASigner signer = new ECDSASigner(hMacDSAKCalculator);
         signer.init(true, curve.createPrivateKeyParams(privateKey));
-        BigInteger[] signature = signer.generateSignature(fixMessageLength(message).toByteArray());
+        BigInteger[] signature = signer.generateSignature(toByteArray(fixMessageLength(message)));
         logger.trace("signature created for message {} r :{} s:{}", message, signature[0], signature[1]);
         return new Signature(signature[0], signature[1]);
     }
@@ -47,7 +57,16 @@ public class EcSigner {
             logger.error("Invalid hash length: {} !== 63", hashHex.length());
             throw new SignException("invalidHashLength", hashHex.length());
         }
-        // In this case delta will be 4 so we perform a shift-left of 4 bits.
+        // In this case delta will be 4, so we perform a shift-left of 4 bits.
         return message.shiftLeft(4);
     }
+
+    public boolean verifySignature(BigInteger message, BigInteger publicKey, Signature signature) throws SignException {
+        ECDSASigner signer = new ECDSASigner();
+        ECPublicKeyParameters publicKeyParameters = curve.createPublicKeyParams(publicKey);
+        signer.init(false, publicKeyParameters);
+        return signer.verifySignature(fixMessageLength(message).toByteArray(), signature.r(), signature.s());
+    }
+
+
 }

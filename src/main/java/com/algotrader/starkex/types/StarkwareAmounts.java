@@ -17,22 +17,22 @@ public final class StarkwareAmounts {
         this.isBuyingSynthetic = isBuyingSynthetic;
     }
 
-    public BigInteger getQuantumsAmountSynthetic() {
+    public BigInteger quantumsAmountSynthetic() {
         return quantumsAmountSynthetic;
     }
 
 
-    public BigInteger getQuantumsAmountCollateral() {
+    public BigInteger quantumsAmountCollateral() {
         return quantumsAmountCollateral;
     }
 
 
-    public BigInteger getAssetIdSynthetic() {
+    public BigInteger assetIdSynthetic() {
         return assetIdSynthetic;
     }
 
 
-    public BigInteger getAssetIdCollateral() {
+    public BigInteger assetIdCollateral() {
         return assetIdCollateral;
     }
 

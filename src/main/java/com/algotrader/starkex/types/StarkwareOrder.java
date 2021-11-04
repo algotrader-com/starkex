@@ -23,36 +23,36 @@ public class StarkwareOrder {
     }
 
 
-    public StarkwareOrderType getOrderType() {
+    public StarkwareOrderType orderType() {
         return orderType;
     }
 
 
-    public BigInteger getQuantumsAmountFee() {
+    public BigInteger quantumsAmountFee() {
         return quantumsAmountFee;
     }
 
 
-    public BigInteger getAssetIdFee() {
+    public BigInteger assetIdFee() {
         return assetIdFee;
     }
 
 
-    public String getPositionId() {
+    public String positionId() {
         return positionId;
     }
 
 
-    public BigInteger getNonce() {
+    public BigInteger nonce() {
         return nonce;
     }
 
-    public Integer getExpirationEpochHours() {
+    public Integer expirationEpochHours() {
         return expirationEpochHours;
     }
 
 
-    public StarkwareAmounts getStarkwareAmounts() {
+    public StarkwareAmounts starkwareAmounts() {
         return starkwareAmounts;
     }
 }

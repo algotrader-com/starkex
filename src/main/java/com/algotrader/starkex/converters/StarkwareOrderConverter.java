@@ -50,7 +50,8 @@ public class StarkwareOrderConverter {
         BigInteger nonce = nonceFromClientId(order.getClientId());
         logger.trace("Generated nonce: {} from client id:{}", nonce, order.getClientId());
         if (order instanceof OrderWithClientIdWithPrice) {
-            return fromOrderWithNonce(new OrderWithNonceAndPrice(order.getOrder(), nonce, ((OrderWithClientIdWithPrice) order).getHumanPrice()), networkId);
+            OrderWithClientIdWithPrice orderWithPrice = (OrderWithClientIdWithPrice) order;
+            return fromOrderWithNonce(new OrderWithNonceAndPrice(order.getOrder(), nonce, orderWithPrice.getHumanPrice()), networkId);
         }
         return fromOrderWithNonce(new OrderWithNonceAndQuoteAmount(order.getOrder(), nonce, ((OrderWithClientIdAndQuoteAmount) order).getHumanQuoteAmount()), networkId);
     }
@@ -84,19 +85,19 @@ public class StarkwareOrderConverter {
         StarkwareAmounts starkwareAmounts = getStarkwareAmounts(order, networkId);
 
         // The limitFee is a fraction, e.g. 0.01 is a 1% fee. It is always paid in the collateral asset.
-        BigInteger quantumsAmountFee = getStarkwareLimitFeeAmount(order.getOrder().getLimitFee(), starkwareAmounts.getQuantumsAmountCollateral());
+        BigInteger quantumsAmountFee = getStarkwareLimitFeeAmount(order.getOrder().limitFee(), starkwareAmounts.quantumsAmountCollateral());
 
         // Convert to a Unix timestamp (in hours) and add buffer to ensure signature is valid on-chain.
         Integer expirationEpochHours =
-                isoTimestampToEpochHours(order.getOrder().getExpirationIsoTimestamp()) + STARK_ORDER_SIGNATURE_EXPIRATION_BUFFER_HOURS;
-        logger.trace("expirationEpochHours {} from {}", expirationEpochHours, order.getOrder().getExpirationIsoTimestamp());
+                isoTimestampToEpochHours(order.getOrder().expirationIsoTimestamp()) + STARK_ORDER_SIGNATURE_EXPIRATION_BUFFER_HOURS;
+        logger.trace("expirationEpochHours {} from {}", expirationEpochHours, order.getOrder().expirationIsoTimestamp());
         return
                 new StarkwareOrder(
                         starkwareAmounts,
                         StarkwareOrderType.LIMIT_ORDER_WITH_FEES,
                         quantumsAmountFee,
-                        starkwareAmounts.getAssetIdCollateral(),
-                        order.getOrder().getPositionId(),
+                        starkwareAmounts.assetIdCollateral(),
+                        order.getOrder().positionId(),
                         order.getNonce(),
                         expirationEpochHours
                 );
@@ -111,17 +112,17 @@ public class StarkwareOrderConverter {
      * @throws QuantumSizeException
      */
     public StarkwareAmounts getStarkwareAmounts(OrderWithNonce order, NetworkId networkId) throws QuantumSizeException {
-        DydxAsset syntheticAsset = order.getOrder().getMarket().getAsset();
+        DydxAsset syntheticAsset = order.getOrder().market().getAsset();
 
         // Convert the synthetic amount to Starkware quantums.
-        BigInteger quantumsAmountSynthetic = order.toQuantums(order.getOrder().getHumanSize(), syntheticAsset, RoundingMode.DOWN, true);
-        logger.trace("quantumsAmountSynthetic {} from humanSize {} ,syntheticAsset {} ,rounding mode {} ", quantumsAmountSynthetic, order.getOrder().getHumanSize(), syntheticAsset, RoundingMode.DOWN);
+        BigInteger quantumsAmountSynthetic = order.toQuantums(order.getOrder().humanSize(), syntheticAsset, RoundingMode.DOWN, true);
+        logger.trace("quantumsAmountSynthetic {} from humanSize {} ,syntheticAsset {} ,rounding mode {} ", quantumsAmountSynthetic, order.getOrder().humanSize(), syntheticAsset, RoundingMode.DOWN);
         return new StarkwareAmounts(
                 quantumsAmountSynthetic,
                 order.toQuantums(),
                 syntheticAsset.getAssetId(),
                 networkId.getCollateralAddressId(),
-                order.getOrder().getSide() == StarkwareOrderSide.BUY
+                order.getOrder().side() == StarkwareOrderSide.BUY
         );
     }
 

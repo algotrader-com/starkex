@@ -13,7 +13,7 @@ import java.math.BigInteger;
  * @author ferat capar
  * @see StarkwareOrder,HashFunction
  */
-public class StarkHashCalculator extends HashCalculator<StarkwareOrder> {
+public class StarkHashCalculator implements HashCalculator<StarkwareOrder> {
     private static final String LIMIT_ORDER_WITH_FEES = "3";
     private static final int ORDER_PADDING_BITS = 17;
     private final HashFunction hashFunction;
@@ -25,35 +25,31 @@ public class StarkHashCalculator extends HashCalculator<StarkwareOrder> {
 
     @Override
     public BigInteger calculateHash(StarkwareOrder message) throws FieldExceedMaxException, HashingException {
-        BigInteger assetIdFeeBn = message.getAssetIdFee();
-        BigInteger quantumsAmountFeeBn = message.getQuantumsAmountFee();
-        BigInteger nonceBn = message.getNonce();
-        BigInteger positionIdBn = new BigInteger(message.getPositionId());
-        BigInteger expirationEpochHours = new BigInteger(message.getExpirationEpochHours().toString());
+        BigInteger positionIdBn = new BigInteger(message.positionId());
+        BigInteger expirationEpochHours = new BigInteger(message.expirationEpochHours().toString());
 
         BigInteger assetIdSellBn;
         BigInteger assetIdBuyBn;
         BigInteger quantumsAmountSellBn;
         BigInteger quantumsAmountBuyBn;
 
-        if (message.getStarkwareAmounts().isBuyingSynthetic()) {
-            assetIdSellBn = message.getStarkwareAmounts().getAssetIdCollateral();
-            assetIdBuyBn = message.getStarkwareAmounts().getAssetIdSynthetic();
-            quantumsAmountSellBn = message.getStarkwareAmounts().getQuantumsAmountCollateral();
-            quantumsAmountBuyBn = message.getStarkwareAmounts().getQuantumsAmountSynthetic();
+        if (message.starkwareAmounts().isBuyingSynthetic()) {
+            assetIdSellBn = message.starkwareAmounts().assetIdCollateral();
+            assetIdBuyBn = message.starkwareAmounts().assetIdSynthetic();
+            quantumsAmountSellBn = message.starkwareAmounts().quantumsAmountCollateral();
+            quantumsAmountBuyBn = message.starkwareAmounts().quantumsAmountSynthetic();
         } else {
-            assetIdSellBn = message.getStarkwareAmounts().getAssetIdSynthetic();
-            assetIdBuyBn = message.getStarkwareAmounts().getAssetIdCollateral();
-            quantumsAmountSellBn = message.getStarkwareAmounts().getQuantumsAmountSynthetic();
-            quantumsAmountBuyBn = message.getStarkwareAmounts().getQuantumsAmountCollateral();
+            assetIdSellBn = message.starkwareAmounts().assetIdSynthetic();
+            assetIdBuyBn = message.starkwareAmounts().assetIdCollateral();
+            quantumsAmountSellBn = message.starkwareAmounts().quantumsAmountSynthetic();
+            quantumsAmountBuyBn = message.starkwareAmounts().quantumsAmountCollateral();
         }
 
-        checkFieldSizes(message, assetIdFeeBn, quantumsAmountFeeBn, nonceBn, positionIdBn, expirationEpochHours);
+        checkFieldSizes(message, message.assetIdFee(), message.quantumsAmountFee(), message.nonce(), positionIdBn, expirationEpochHours);
 
         BigInteger orderPart1 = new BigInteger(quantumsAmountSellBn.toString())
                 .shiftLeft(OrderFieldBitLengths.QUANTUMS_AMOUNT).add(quantumsAmountBuyBn)
-                .shiftLeft(OrderFieldBitLengths.QUANTUMS_AMOUNT).add(quantumsAmountFeeBn)
-                .shiftLeft(OrderFieldBitLengths.NONCE).add(nonceBn);
+                .shiftLeft(OrderFieldBitLengths.QUANTUMS_AMOUNT).add(message.quantumsAmountFee()).shiftLeft(OrderFieldBitLengths.NONCE).add(message.nonce());
 
         BigInteger orderPart2 = new BigInteger(LIMIT_ORDER_WITH_FEES)
                 .shiftLeft(OrderFieldBitLengths.POSITION_ID).add(positionIdBn) // Repeat (1/3).
@@ -63,7 +59,7 @@ public class StarkHashCalculator extends HashCalculator<StarkwareOrder> {
                 .shiftLeft(ORDER_PADDING_BITS);
 
         BigInteger cacheAsset = hashFunction.hashFromCache(assetIdSellBn, assetIdBuyBn);
-        BigInteger assetsBn = hashFunction.hashFromCache(cacheAsset, assetIdFeeBn);
+        BigInteger assetsBn = hashFunction.hashFromCache(cacheAsset, message.assetIdFee());
 
         return hashFunction.createHash(
                 hashFunction.createHash(assetsBn, orderPart1),
@@ -71,29 +67,29 @@ public class StarkHashCalculator extends HashCalculator<StarkwareOrder> {
         );
     }
 
-    private void checkFieldSizes(StarkwareOrder message, BigInteger assetIdFeeBn, BigInteger quantumsAmountFeeBn, BigInteger nonceBn, BigInteger positionIdBn, BigInteger expirationEpochHours) throws FieldExceedMaxException {
-        if (message.getStarkwareAmounts().getAssetIdSynthetic().bitLength() > OrderFieldBitLengths.ASSET_ID_SYNTHETIC) {
+    private void checkFieldSizes(StarkwareOrder message, BigInteger assetIdFee, BigInteger quantumsAmountFee, BigInteger nonce, BigInteger positionId, BigInteger expirationEpochHours) throws FieldExceedMaxException {
+        if (message.starkwareAmounts().assetIdSynthetic().bitLength() > OrderFieldBitLengths.ASSET_ID_SYNTHETIC) {
             throw new FieldExceedMaxException("assetIdSynthetic");
         }
-        if (message.getStarkwareAmounts().getAssetIdCollateral().bitLength() > OrderFieldBitLengths.ASSET_ID_COLLATERAL) {
+        if (message.starkwareAmounts().assetIdCollateral().bitLength() > OrderFieldBitLengths.ASSET_ID_COLLATERAL) {
             throw new FieldExceedMaxException("assetIdCollateral");
         }
-        if (assetIdFeeBn.bitLength() > OrderFieldBitLengths.ASSET_ID_FEE) {
+        if (assetIdFee.bitLength() > OrderFieldBitLengths.ASSET_ID_FEE) {
             throw new FieldExceedMaxException("assetIdFee");
         }
-        if (message.getStarkwareAmounts().getQuantumsAmountSynthetic().bitLength() > OrderFieldBitLengths.QUANTUMS_AMOUNT) {
+        if (message.starkwareAmounts().quantumsAmountSynthetic().bitLength() > OrderFieldBitLengths.QUANTUMS_AMOUNT) {
             throw new FieldExceedMaxException("quantumsAmountSynthetic");
         }
-        if (message.getStarkwareAmounts().getQuantumsAmountCollateral().bitLength() > OrderFieldBitLengths.QUANTUMS_AMOUNT) {
+        if (message.starkwareAmounts().quantumsAmountCollateral().bitLength() > OrderFieldBitLengths.QUANTUMS_AMOUNT) {
             throw new FieldExceedMaxException("quantumsAmountCollateral");
         }
-        if (quantumsAmountFeeBn.bitLength() > OrderFieldBitLengths.QUANTUMS_AMOUNT) {
+        if (quantumsAmountFee.bitLength() > OrderFieldBitLengths.QUANTUMS_AMOUNT) {
             throw new FieldExceedMaxException("quantumsAmountFee");
         }
-        if (nonceBn.bitLength() > OrderFieldBitLengths.NONCE) {
+        if (nonce.bitLength() > OrderFieldBitLengths.NONCE) {
             throw new FieldExceedMaxException("nonce");
         }
-        if (positionIdBn.bitLength() > OrderFieldBitLengths.POSITION_ID) {
+        if (positionId.bitLength() > OrderFieldBitLengths.POSITION_ID) {
             throw new FieldExceedMaxException("positionId");
         }
         if (expirationEpochHours.bitLength() > OrderFieldBitLengths.EXPIRATION_EPOCH_HOURS) {

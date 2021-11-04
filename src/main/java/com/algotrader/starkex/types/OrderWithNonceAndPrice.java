@@ -18,17 +18,17 @@ public class OrderWithNonceAndPrice extends OrderWithNonce {
 
     @Override
     protected boolean throwException() {
-        return true;
+        return false;
     }
 
     @Override
     protected RoundingMode getRoundingMode() {
-        return RoundingMode.DOWN;
+        return getOrder().side() == StarkwareOrderSide.BUY ? RoundingMode.UP : RoundingMode.DOWN;
     }
 
     @Override
     protected String getHumanAmount() {
-        return new BigDecimal(getOrder().getHumanSize()).
+        return new BigDecimal(getOrder().humanSize()).
                 multiply(new BigDecimal(humanPrice)).toString();
     }
 }
