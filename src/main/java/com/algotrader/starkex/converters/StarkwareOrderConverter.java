@@ -13,13 +13,12 @@ import com.algotrader.starkex.types.StarkwareAmounts;
 import com.algotrader.starkex.types.StarkwareOrder;
 import com.algotrader.starkex.types.StarkwareOrderSide;
 import com.algotrader.starkex.types.StarkwareOrderType;
-
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -112,7 +111,7 @@ public class StarkwareOrderConverter {
      * @throws QuantumSizeException
      */
     public StarkwareAmounts getStarkwareAmounts(OrderWithNonce order, NetworkId networkId) throws QuantumSizeException {
-        DydxAsset syntheticAsset = order.getOrder().market().getAsset();
+        DydxAsset syntheticAsset = order.getOrder().asset();
 
         // Convert the synthetic amount to Starkware quantums.
         BigInteger quantumsAmountSynthetic = order.toQuantums(order.getOrder().humanSize(), syntheticAsset, RoundingMode.DOWN, true);

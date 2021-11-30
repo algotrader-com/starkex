@@ -1,22 +1,22 @@
 package com.algotrader.starkex.signature;
 
+import com.algotrader.starkex.exception.FieldExceedMaxException;
+import com.algotrader.starkex.exception.HashingException;
+import com.algotrader.starkex.exception.QuantumSizeException;
+import com.algotrader.starkex.exception.SignException;
+import com.algotrader.starkex.types.DydxAsset;
+import com.algotrader.starkex.types.NetworkId;
+import com.algotrader.starkex.types.Order;
+import com.algotrader.starkex.types.OrderWithClientIdAndQuoteAmount;
+import com.algotrader.starkex.types.StarkwareOrderSide;
 import org.junit.jupiter.api.Test;
+
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-
-import com.algotrader.starkex.exception.FieldExceedMaxException;
-import com.algotrader.starkex.exception.HashingException;
-import com.algotrader.starkex.exception.QuantumSizeException;
-import com.algotrader.starkex.exception.SignException;
-import com.algotrader.starkex.types.DydxMarket;
-import com.algotrader.starkex.types.NetworkId;
-import com.algotrader.starkex.types.Order;
-import com.algotrader.starkex.types.OrderWithClientIdAndQuoteAmount;
-import com.algotrader.starkex.types.StarkwareOrderSide;
 
 class TestStarkSigner {
 
@@ -30,7 +30,7 @@ class TestStarkSigner {
                 new Order("56277",
                         "1",
                         "0.001",
-                        DydxMarket.ATOM_USD,
+                        new DydxAsset("ATOM", 7),
                         StarkwareOrderSide.BUY,
                         "2021-09-20T00:00:00.000Z"),
                 "123456",
@@ -52,7 +52,7 @@ class TestStarkSigner {
                 new Order("123456",
                         "1.00",
                         "0.0015",
-                        DydxMarket.ZEC_USD,
+                        new DydxAsset("ZED", 8),
                         StarkwareOrderSide.SELL,
                         "2021-11-03T16:22:23Z"),
                 "WyHPW57ZKGwcie18UbEBGcry2QervYgYSG1Fm6YG",
