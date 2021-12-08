@@ -22,11 +22,11 @@ mvn install
 ## Usage:
 
 ```
-OrderWithClientIdAndQuoteAmount order = new OrderWithClientIdAndQuoteAmount(
+OrderWithClientIdWithPrice order = new OrderWithClientIdWithPrice(
         new Order("56277",
                 "1",
                 "0.001",
-                DydxMarket.ATOM_USD,
+                new DydxAsset("ATOM", 7),
                 StarkwareOrderSide.BUY,
                 "2021-09-20T00:00:00.000Z"),
         "123456",
